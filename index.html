@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>면접 연습</title>
+  <style>
+    :root {
+      --bg: #14160f;
+      --bg-raise: #1e2218;
+      --line: rgba(243, 236, 214, 0.14);
+      --text: #f6f1e4;
+      --muted: #b4ad9c;
+      --dim: #7d776a;
+      --lime: #dff25a;
+      --lime-ink: #1a2108;
+      --danger: #ffb199;
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+
+    [hidden] { display: none !important; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+      background:
+        radial-gradient(1200px 500px at 10% -10%, rgba(223, 242, 90, 0.08), transparent 55%),
+        var(--bg);
+      color: var(--text);
+    }
+
+    button, input, select { font: inherit; }
+
+    .wrap {
+      width: min(720px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 48px 0 72px;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--lime);
+      font-size: 0.92rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 3.1rem);
+      font-weight: 720;
+      letter-spacing: -0.045em;
+      line-height: 1.15;
+    }
+
+    .lede {
+      margin: 14px 0 0;
+      max-width: 38rem;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.65;
+    }
+
+    .card {
+      margin-top: 32px;
+      padding: 22px;
+      background: var(--bg-raise);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .drop {
+      display: grid;
+      gap: 8px;
+      place-items: center;
+      min-height: 220px;
+      padding: 28px 20px;
+      text-align: center;
+      border: 1.5px dashed rgba(223, 242, 90, 0.45);
+      border-radius: 18px;
+      background: rgba(223, 242, 90, 0.04);
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .drop:hover,
+    .drop.drag,
+    .drop:focus-visible {
+      background: rgba(223, 242, 90, 0.1);
+      border-color: var(--lime);
+      outline: none;
+    }
+
+    .drop strong {
+      font-size: 1.25rem;
+      letter-spacing: -0.03em;
+    }
+
+    .drop p {
+      margin: 0;
+      max-width: 28rem;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .file-btn {
+      margin-top: 6px;
+      padding: 12px 18px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--lime);
+      color: var(--lime-ink);
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    .file-btn:focus-visible,
+    .actions button:focus-visible,
+    .text-btn:focus-visible,
+    select:focus-visible,
+    .switch input:focus-visible + .track {
+      outline: 2px solid var(--lime);
+      outline-offset: 3px;
+    }
+
+    .settings {
+      display: grid;
+      gap: 14px;
+    }
+
+    .field,
+    .switch-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .field span,
+    .switch-row > span {
+      color: var(--muted);
+      font-weight: 650;
+    }
+
+    select {
+      width: min(420px, 100%);
+      padding: 10px 40px 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background-color: #14160f;
+      color: var(--text);
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%23b4ad9c' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+    }
+
+    .switch {
+      position: relative;
+      width: 52px;
+      height: 32px;
+      flex: 0 0 auto;
+    }
+
+    .switch input {
+      position: absolute;
+      z-index: 1;
+      inset: 0;
+      margin: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .switch .track {
+      display: block;
+      width: 52px;
+      height: 32px;
+      border-radius: 999px;
+      background: #3a3d34;
+      pointer-events: none;
+    }
+
+    .switch .thumb {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--text);
+      transition: transform 0.15s ease;
+    }
+
+    .switch input:checked + .track {
+      background: var(--lime);
+    }
+
+    .switch input:checked + .track .thumb {
+      transform: translateX(20px);
+      background: var(--lime-ink);
+    }
+
+    .error {
+      margin: 14px 0 0;
+      color: var(--danger);
+      line-height: 1.5;
+    }
+
+    .example {
+      margin: 16px 0 0;
+      color: var(--dim);
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
+
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+    }
+
+    .progress {
+      margin: 0;
+      color: var(--lime);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .text-btn {
+      padding: 0;
+      border: 0;
+      background: none;
+      color: var(--muted);
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .status {
+      min-height: 1.5em;
+      margin: 18px 0 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .timer-block {
+      display: grid;
+      justify-items: center;
+      margin: 18px 0 8px;
+      padding: 18px 12px 8px;
+    }
+
+    .timer {
+      margin: 0;
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(4.4rem, 14vw, 7.2rem);
+      font-weight: 680;
+      letter-spacing: -0.06em;
+      line-height: 0.9;
+      color: var(--dim);
+    }
+
+    .timer[data-running="on"] { color: var(--lime); }
+    .timer[data-running="off"] { color: var(--text); }
+
+    .bars {
+      display: flex;
+      gap: 5px;
+      height: 18px;
+      margin-top: 16px;
+      align-items: flex-end;
+    }
+
+    .bars span {
+      width: 5px;
+      height: 6px;
+      border-radius: 99px;
+      background: var(--lime);
+      transform-origin: center bottom;
+    }
+
+    .bars[data-on="true"] span {
+      animation: pulse 0.9s ease-in-out infinite;
+    }
+
+    .bars[data-on="true"] span:nth-child(2) { animation-delay: 0.15s; }
+    .bars[data-on="true"] span:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes pulse {
+      0%, 100% { height: 6px; }
+      50% { height: 18px; }
+    }
+
+    .hint {
+      margin: 8px 0 0;
+      color: var(--dim);
+      font-size: 0.92rem;
+      text-align: center;
+    }
+
+    .question {
+      margin: 8px 0 0;
+      padding: 18px 18px 16px;
+      border-radius: 16px;
+      background: rgba(246, 241, 228, 0.05);
+      border: 1px solid var(--line);
+      font-size: 1.28rem;
+      line-height: 1.65;
+      letter-spacing: -0.03em;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .actions button {
+      min-height: 52px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .actions button:disabled {
+      opacity: 0.38;
+      cursor: not-allowed;
+    }
+
+    #btn-stop:not(:disabled) {
+      background: var(--danger);
+      color: #2a120c;
+      border-color: transparent;
+      font-weight: 750;
+    }
+
+    #btn-next {
+      grid-column: 1 / -1;
+      background: var(--text);
+      color: #17160f;
+      border-color: transparent;
+      font-weight: 750;
+    }
+
+    .done {
+      text-align: center;
+      padding: 42px 22px;
+    }
+
+    .done h2 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 2.8rem);
+      letter-spacing: -0.045em;
+    }
+
+    .done p {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .done-actions {
+      display: grid;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .done-actions button {
+      min-height: 52px;
+      border-radius: 14px;
+      border: 0;
+      cursor: pointer;
+      font-weight: 750;
+    }
+
+    #btn-again {
+      background: var(--lime);
+      color: var(--lime-ink);
+    }
+
+    #btn-new-file {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    @media (max-width: 560px) {
+      .actions { grid-template-columns: 1fr; }
+      .wrap { padding-top: 28px; }
+      .field { align-items: stretch; flex-direction: column; }
+      select { width: 100%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bars[data-on="true"] span { animation: none; height: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <p class="eyebrow">면접 대비</p>
+    <h1>면접 연습</h1>
+    <p class="lede">질문을 음성으로 듣고, 읽기가 끝난 순간부터 답변 시간을 재세요.</p>
+
+    <section class="card settings" aria-label="읽기 설정">
+      <label class="field">
+        <span>목소리</span>
+        <select id="voice-select"></select>
+      </label>
+      <label class="switch-row">
+        <span id="timer-switch-label">타이머 표시</span>
+        <span class="switch">
+          <input id="timer-switch" type="checkbox" role="switch" checked aria-labelledby="timer-switch-label">
+          <span class="track" aria-hidden="true"><span class="thumb"></span></span>
+        </span>
+      </label>
+    </section>
+
+    <section id="view-upload" class="card">
+      <div id="drop" class="drop" tabindex="0" role="button" aria-label="질문 텍스트 파일 업로드">
+        <strong>텍스트 파일을 업로드해 주세요</strong>
+        <p>질문 리스트를 쉼표(,)로 구분해 둔 txt 파일을 올려 주세요. 질문은 무작위로, 한 번씩만 나옵니다.</p>
+        <button id="pick-file" class="file-btn" type="button">파일 선택</button>
+      </div>
+      <input id="file-input" type="file" accept=".txt,text/plain" hidden>
+      <p id="file-error" class="error" hidden></p>
+      <p class="example">예시: 지원 동기를 말해 보세요, 학교에 직접 와 본 소감이 어떠한가요?</p>
+    </section>
+
+    <section id="view-practice" class="card" hidden>
+      <div class="top-row">
+        <p id="progress" class="progress">질문 0개</p>
+        <button id="btn-change-file" class="text-btn" type="button">다른 파일</button>
+      </div>
+      <p id="status" class="status" aria-live="polite">질문 시작을 누르면 첫 질문을 읽어 드립니다.</p>
+      <div class="timer-block">
+        <p id="timer" class="timer" data-running="idle">0:00.0</p>
+        <div id="bars" class="bars" data-on="false" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+        <p id="hint" class="hint">질문 음성이 모두 끝난 뒤에 타이머가 시작됩니다.</p>
+      </div>
+      <p id="question" class="question" hidden></p>
+      <div class="actions">
+        <button id="btn-toggle" type="button" disabled>질문 보기</button>
+        <button id="btn-stop" type="button" disabled>타이머 멈추기</button>
+        <button id="btn-next" type="button">질문 시작</button>
+      </div>
+    </section>
+
+    <section id="view-done" class="card done" hidden>
+      <h2>질문이 끝났습니다</h2>
+      <p id="done-detail">준비한 질문을 모두 한 번씩 연습했습니다.</p>
+      <div class="done-actions">
+        <button id="btn-again" type="button">같은 목록으로 다시</button>
+        <button id="btn-new-file" type="button">다른 파일 올리기</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const viewUpload = $("view-upload");
+    const viewPractice = $("view-practice");
+    const viewDone = $("view-done");
+    const fileInput = $("file-input");
+    const fileError = $("file-error");
+    const drop = $("drop");
+    const progressEl = $("progress");
+    const statusEl = $("status");
+    const timerEl = $("timer");
+    const hintEl = $("hint");
+    const barsEl = $("bars");
+    const questionEl = $("question");
+    const btnToggle = $("btn-toggle");
+    const btnStop = $("btn-stop");
+    const btnNext = $("btn-next");
+    const voiceSelect = $("voice-select");
+    const timerSwitch = $("timer-switch");
+    const VOICE_KEY = "interview-tts-voice";
+
+    const state = {
+      sourceText: "",
+      fileName: "",
+      order: [],
+      index: -1,
+      phase: "upload",
+      textVisible: false,
+      timerShown: true,
+      turnId: 0,
+      timerStart: 0,
+      frozenMs: 0,
+      raf: 0,
+      watch: 0,
+      lockUntil: 0
+    };
+
+    function parseQuestions(text) {
+      return text
+        .replace(/^\uFEFF/, "")
+        .split(/[,，]/)
+        .map((part) => part.replace(/\s+/g, " ").trim())
+        .filter(Boolean);
+    }
+
+    function shuffle(list) {
+      const arr = [...list];
+      for (let i = arr.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function formatTime(ms) {
+      const safe = Math.max(0, ms);
+      const tenths = Math.floor(safe / 100) % 10;
+      const totalSeconds = Math.floor(safe / 1000);
+      const seconds = totalSeconds % 60;
+      const minutes = Math.floor(totalSeconds / 60);
+      return `${minutes}:${String(seconds).padStart(2, "0")}.${tenths}`;
+    }
+
+    function setStatus(text) {
+      statusEl.textContent = text;
+    }
+
+    function showError(text) {
+      fileError.hidden = !text;
+      fileError.textContent = text || "";
+    }
+
+    function isKoreanVoice(voice) {
+      return (voice.lang || "").toLowerCase().replace("_", "-").startsWith("ko");
+    }
+
+    function readSavedVoice() {
+      try {
+        return localStorage.getItem(VOICE_KEY) || "";
+      } catch {
+        return "";
+      }
+    }
+
+    function saveVoice(uri) {
+      try {
+        localStorage.setItem(VOICE_KEY, uri);
+      } catch {
+        /* 저장이 막혀 있어도 이번 연습에서는 선택한 목소리를 사용합니다. */
+      }
+    }
+
+    function fillVoices() {
+      const synth = window.speechSynthesis;
+      const voices = synth ? synth.getVoices() : [];
+      const saved = voiceSelect.value || readSavedVoice();
+      const korean = voices.filter(isKoreanVoice);
+      const ordered = [...korean, ...voices.filter((voice) => !isKoreanVoice(voice))];
+      voiceSelect.replaceChildren();
+
+      if (!ordered.length) {
+        const empty = document.createElement("option");
+        empty.value = "";
+        empty.textContent = "사용 가능한 목소리를 찾지 못했습니다";
+        voiceSelect.append(empty);
+        voiceSelect.disabled = true;
+        return;
+      }
+
+      voiceSelect.disabled = false;
+      ordered.forEach((voice) => {
+        const option = document.createElement("option");
+        option.value = voice.voiceURI;
+        option.textContent = `${voice.name} · ${voice.lang || "언어 없음"}`;
+        voiceSelect.append(option);
+      });
+
+      const chosen = ordered.find((voice) => voice.voiceURI === saved) || korean[0] || ordered[0];
+      voiceSelect.value = chosen.voiceURI;
+    }
+
+    function selectedVoice() {
+      const synth = window.speechSynthesis;
+      if (!synth) return null;
+      const voices = synth.getVoices();
+      return voices.find((voice) => voice.voiceURI === voiceSelect.value) || voices.find(isKoreanVoice) || null;
+    }
+
+    function applyTimerVisibility() {
+      timerEl.hidden = !state.timerShown;
+      timerSwitch.checked = state.timerShown;
+      timerSwitch.setAttribute("aria-checked", state.timerShown ? "true" : "false");
+    }
+
+    function renderTimer(ms, mode) {
+      timerEl.textContent = formatTime(ms);
+      timerEl.dataset.running = mode;
+    }
+
+    function stopClock() {
+      cancelAnimationFrame(state.raf);
+      state.raf = 0;
+    }
+
+    function tick() {
+      if (state.phase !== "timing") return;
+      renderTimer(performance.now() - state.timerStart, "on");
+      state.raf = requestAnimationFrame(tick);
+    }
+
+    function beginTimer() {
+      if (state.phase !== "speaking") return;
+      state.phase = "timing";
+      state.timerStart = performance.now();
+      state.frozenMs = 0;
+      barsEl.dataset.on = "false";
+      hintEl.textContent = "답변 시간입니다. 끝나면 타이머를 멈추세요.";
+      setStatus("질문을 모두 읽었습니다. 지금 타이머가 시작됐습니다.");
+      renderTimer(0, "on");
+      updateControls();
+      tick();
+      btnStop.focus();
+    }
+
+    function haltTimer() {
+      if (state.phase !== "timing") return;
+      state.frozenMs = performance.now() - state.timerStart;
+      state.phase = "stopped";
+      stopClock();
+      renderTimer(state.frozenMs, "off");
+      state.timerShown = true;
+      applyTimerVisibility();
+      hintEl.textContent = "타이머를 멈췄습니다.";
+      setStatus(`답변 시간은 ${formatTime(state.frozenMs)} 입니다.`);
+      updateControls();
+    }
+
+    function clearSpeechWatch() {
+      clearTimeout(state.watch);
+      state.watch = 0;
+    }
+
+    function cancelSpeech() {
+      state.turnId += 1;
+      clearSpeechWatch();
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+    }
+
+    function markSpeechFailed(message) {
+      clearSpeechWatch();
+      state.phase = "speech-failed";
+      barsEl.dataset.on = "false";
+      hintEl.textContent = "음성이 끝나지 않아 타이머를 시작하지 않았습니다.";
+      setStatus(message);
+      updateControls();
+    }
+
+    function speakQuestion(text) {
+      const synth = window.speechSynthesis;
+      if (!synth) {
+        markSpeechFailed("이 브라우저는 음성 읽기를 지원하지 않습니다. 타이머는 시작하지 않았습니다.");
+        return;
+      }
+
+      const id = ++state.turnId;
+      clearSpeechWatch();
+
+      const startSpeaking = (attempt) => {
+        if (id !== state.turnId || state.phase !== "speaking") return;
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        const voice = selectedVoice();
+        if (voice) {
+          utterance.voice = voice;
+          utterance.lang = voice.lang || "ko-KR";
+        } else {
+          utterance.lang = "ko-KR";
+        }
+        utterance.rate = 0.96;
+
+        let started = false;
+        let settled = false;
+        let quietSince = 0;
+
+        const finish = () => {
+          if (settled || !started || id !== state.turnId || state.phase !== "speaking") return;
+          settled = true;
+          clearSpeechWatch();
+          beginTimer();
+        };
+
+        utterance.onstart = () => {
+          if (id !== state.turnId) return;
+          started = true;
+        };
+
+        utterance.onend = () => finish();
+
+        utterance.onerror = (event) => {
+          if (settled || id !== state.turnId) return;
+          const reason = event.error || "";
+          if ((reason === "interrupted" || reason === "canceled" || reason === "cancelled") && !started && attempt < 2) {
+            clearSpeechWatch();
+            state.watch = setTimeout(() => startSpeaking(attempt + 1), 150);
+            return;
+          }
+          if (reason === "interrupted" || reason === "canceled" || reason === "cancelled") return;
+          settled = true;
+          markSpeechFailed("질문을 읽지 못했습니다. 브라우저 소리 설정을 확인한 뒤 다시 읽어 주세요.");
+        };
+
+        const watch = () => {
+          if (settled || id !== state.turnId || state.phase !== "speaking") return;
+          const active = synth.speaking || synth.pending;
+          if (active) {
+            started = true;
+            quietSince = 0;
+          } else if (started) {
+            if (!quietSince) quietSince = performance.now();
+            if (performance.now() - quietSince >= 400) {
+              finish();
+              return;
+            }
+          } else if (performance.now() - spokenAt > 2500) {
+            settled = true;
+            clearSpeechWatch();
+            if (attempt < 2) {
+              startSpeaking(attempt + 1);
+              return;
+            }
+            markSpeechFailed("질문을 읽지 못했습니다. 페이지를 클릭한 뒤 다시 읽어 주세요.");
+            return;
+          }
+          state.watch = setTimeout(watch, 120);
+        };
+
+        const spokenAt = performance.now();
+        const speakNow = () => {
+          if (id !== state.turnId || state.phase !== "speaking") return;
+          synth.speak(utterance);
+          synth.resume();
+          state.watch = setTimeout(watch, 120);
+        };
+
+        if (synth.speaking || synth.pending) {
+          synth.cancel();
+          state.watch = setTimeout(speakNow, 90);
+        } else {
+          speakNow();
+        }
+      };
+
+      startSpeaking(0);
+    }
+
+    function applyQuestionVisibility() {
+      const hasQuestion = state.index >= 0;
+      questionEl.hidden = !hasQuestion || !state.textVisible;
+      btnToggle.textContent = state.textVisible ? "질문 가리기" : "질문 보기";
+      btnToggle.setAttribute("aria-pressed", state.textVisible ? "true" : "false");
+    }
+
+    function updateControls() {
+      const total = state.order.length;
+      const started = state.index >= 0;
+      const last = started && state.index === total - 1;
+      progressEl.textContent = started ? `${state.index + 1} / ${total}` : `질문 ${total}개`;
+      btnToggle.disabled = !started;
+      btnStop.disabled = state.phase !== "timing";
+      btnNext.disabled = state.phase === "speaking";
+      if (state.phase === "armed") btnNext.textContent = "질문 시작";
+      else if (state.phase === "speech-failed") btnNext.textContent = "다시 읽기";
+      else if (last) btnNext.textContent = "연습 마치기";
+      else btnNext.textContent = "다음 질문";
+    }
+
+    function showPractice() {
+      viewUpload.hidden = true;
+      viewDone.hidden = true;
+      viewPractice.hidden = false;
+    }
+
+    function showUpload() {
+      cancelSpeech();
+      stopClock();
+      state.phase = "upload";
+      viewPractice.hidden = true;
+      viewDone.hidden = true;
+      viewUpload.hidden = false;
+    }
+
+    function armSession() {
+      cancelSpeech();
+      stopClock();
+      const questions = parseQuestions(state.sourceText);
+      if (!questions.length) {
+        showUpload();
+        showError("질문을 찾지 못했습니다. 쉼표(,)로 구분했는지 확인해 주세요.");
+        return;
+      }
+      state.order = shuffle(questions);
+      state.index = -1;
+      state.phase = "armed";
+      state.textVisible = false;
+      state.frozenMs = 0;
+      questionEl.textContent = "";
+      renderTimer(0, "idle");
+      applyTimerVisibility();
+      barsEl.dataset.on = "false";
+      hintEl.textContent = "질문 음성이 모두 끝난 뒤에 타이머가 시작됩니다.";
+      setStatus(`${state.fileName}에서 질문 ${questions.length}개를 읽었습니다. 질문 시작을 눌러 주세요.`);
+      applyQuestionVisibility();
+      updateControls();
+      showPractice();
+    }
+
+    function showDone() {
+      const elapsed = state.phase === "timing" ? performance.now() - state.timerStart : state.frozenMs;
+      cancelSpeech();
+      stopClock();
+      state.phase = "done";
+      viewPractice.hidden = true;
+      viewUpload.hidden = true;
+      viewDone.hidden = false;
+      const detail = $("done-detail");
+      const count = state.order.length;
+      detail.textContent = elapsed > 0
+        ? `${count}개 질문을 모두 마쳤습니다. 마지막 답변 시간은 ${formatTime(elapsed)} 입니다.`
+        : `${count}개 질문을 모두 마쳤습니다.`;
+    }
+
+    function replayCurrent() {
+      stopClock();
+      state.phase = "speaking";
+      state.frozenMs = 0;
+      renderTimer(0, "idle");
+      barsEl.dataset.on = "true";
+      hintEl.textContent = "질문 음성이 모두 끝난 뒤에 타이머가 시작됩니다.";
+      setStatus("질문을 읽고 있습니다. 음성이 끝나기 전에는 타이머가 움직이지 않습니다.");
+      updateControls();
+      speakQuestion(state.order[state.index]);
+    }
+
+    function goNext() {
+      if (performance.now() < state.lockUntil) return;
+      if (state.phase === "speaking") return;
+      state.lockUntil = performance.now() + 350;
+
+      if (state.phase === "speech-failed" && state.index >= 0) {
+        replayCurrent();
+        return;
+      }
+
+      const hasCurrent = state.index >= 0;
+      const isLast = hasCurrent && state.index === state.order.length - 1;
+      if (isLast || state.index + 1 >= state.order.length) {
+        showDone();
+        return;
+      }
+
+      cancelSpeech();
+      stopClock();
+      state.index += 1;
+      state.phase = "speaking";
+      state.frozenMs = 0;
+      state.textVisible = false;
+      questionEl.textContent = state.order[state.index];
+      renderTimer(0, "idle");
+      barsEl.dataset.on = "true";
+      hintEl.textContent = "질문 음성이 모두 끝난 뒤에 타이머가 시작됩니다.";
+      setStatus("질문을 읽고 있습니다. 음성이 끝나기 전에는 타이머가 움직이지 않습니다.");
+      applyQuestionVisibility();
+      updateControls();
+      speakQuestion(state.order[state.index]);
+    }
+
+    async function readFileText(file) {
+      const buffer = await file.arrayBuffer();
+      try {
+        return new TextDecoder("utf-8", { fatal: true }).decode(buffer);
+      } catch {
+        return new TextDecoder("euc-kr").decode(buffer);
+      }
+    }
+
+    async function loadFile(file) {
+      if (!file) return;
+      const name = file.name || "질문 파일";
+      const looksText = /\.txt$/i.test(name) || !file.type || file.type.startsWith("text/");
+      if (!looksText) {
+        showError("텍스트 파일(.txt)을 올려 주세요.");
+        return;
+      }
+      try {
+        const text = await readFileText(file);
+        const questions = parseQuestions(text);
+        if (!questions.length) {
+          showError("질문을 찾지 못했습니다. 쉼표(,)로 구분했는지 확인해 주세요.");
+          return;
+        }
+        showError("");
+        state.sourceText = text;
+        state.fileName = name;
+        armSession();
+      } catch {
+        showError("파일을 읽지 못했습니다. UTF-8 또는 한글 텍스트 파일인지 확인해 주세요.");
+      }
+    }
+
+    $("pick-file").addEventListener("click", (event) => {
+      event.stopPropagation();
+      fileInput.click();
+    });
+
+    drop.addEventListener("click", () => fileInput.click());
+    drop.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        fileInput.click();
+      }
+    });
+
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files && fileInput.files[0];
+      loadFile(file);
+      fileInput.value = "";
+    });
+
+    ["dragenter", "dragover"].forEach((name) => {
+      drop.addEventListener(name, (event) => {
+        event.preventDefault();
+        drop.classList.add("drag");
+      });
+    });
+
+    ["dragleave", "drop"].forEach((name) => {
+      drop.addEventListener(name, (event) => {
+        event.preventDefault();
+        drop.classList.remove("drag");
+      });
+    });
+
+    drop.addEventListener("drop", (event) => {
+      const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+      loadFile(file);
+    });
+
+    btnToggle.addEventListener("click", () => {
+      if (state.index < 0) return;
+      state.textVisible = !state.textVisible;
+      applyQuestionVisibility();
+    });
+
+    btnStop.addEventListener("click", haltTimer);
+    btnNext.addEventListener("click", goNext);
+    timerSwitch.addEventListener("change", () => {
+      state.timerShown = timerSwitch.checked;
+      applyTimerVisibility();
+    });
+    voiceSelect.addEventListener("change", () => {
+      if (voiceSelect.value) saveVoice(voiceSelect.value);
+    });
+    $("btn-change-file").addEventListener("click", showUpload);
+    $("btn-again").addEventListener("click", armSession);
+    $("btn-new-file").addEventListener("click", showUpload);
+
+    window.addEventListener("pagehide", () => {
+      cancelSpeech();
+      stopClock();
+    });
+
+    fillVoices();
+    applyTimerVisibility();
+    if (window.speechSynthesis) {
+      window.speechSynthesis.addEventListener("voiceschanged", fillVoices);
+    }
+  </script>
+</body>
+</html>
